@@ -40,7 +40,7 @@ function plugin_impacts_install() {
 
    } else {
       //// upgrade installation
-      include_once(glpi_root."/plugins/impacts/install/update.php");
+      include_once(GLPI_ROOT."/plugins/impacts/install/update.php");
       impacts_update();
    }
 

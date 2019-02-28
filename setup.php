@@ -31,7 +31,8 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 // Purpose of file: to setup office online plugin to GLPI
 // ----------------------------------------------------------------------
 
-define('IMPACTS_VERSION', '1.1.0');
+
+define('IMPACTS_VERSION', '1.2.0');
 
 /**
  * Summary of plugin_init_impacts
@@ -66,14 +67,14 @@ function plugin_init_impacts() {
 function plugin_version_impacts() {
 
    return ['name'           => 'Asset impacts',
-                'version'        =>IMPACTS_VERSION,
+                'version'        => IMPACTS_VERSION,
                 'author'         => 'Olivier Moron',
                 'license'        => 'GPLv2+',
                 'homepage'       => 'https://github.com/tomolimo/impacts',
                 'requirements'   => [
                   'glpi'   => [
-                     'min' => '9.2',
-                     'max' => '9.2.99',
+                     'min' => '9.3',
+                     'max' => '9.3.99',
                      //'plugins' => ['appliances', 'accounts']
                   ]
                 ]
@@ -89,7 +90,7 @@ function plugin_impacts_check_prerequisites() {
    global $DB, $LANG;
 
    // Strict version check (could be less strict, or could allow various version)
-   if (version_compare(GLPI_VERSION, '9.2', 'lt')) {
+   if (version_compare(GLPI_VERSION, '9.3', 'lt')) {
       return false;
    }
 

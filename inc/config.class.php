@@ -82,7 +82,7 @@ class PluginImpactsConfig extends CommonDBTM {
 
    /**
     * Summary of getInstance
-    * @return PluginProcessmakerConfig
+     * @return PluginImpactsConfig
     */
    static function getInstance() {
       $dbu = new DbUtils;

@@ -145,7 +145,10 @@ class PluginImpactsImpact extends CommonDBRelation {
       }
       if ($level > 0) {
          if ($direction & self::DIRECTION_FORWARD) {
-            $retchild = $dbu->getAllDataFromTable(self::getTable(), "itemtype_1 = '".$item->getType()."' AND items_id_1=".$item->getID());
+
+            $restrict = ["itemtype_1" => $item->getType(), 'items_id_1' => $item->getID()];
+            //$retchild = $dbu->getAllDataFromTable(self::getTable(), "itemtype_1 = '".$item->getType()."' AND items_id_1=".$item->getID());
+            $retchild = $dbu->getAllDataFromTable(self::getTable(), $restrict);
             $opitems += $retchild;
             if ($level > 1) {
                foreach ($retchild as $child) {
@@ -166,7 +169,9 @@ class PluginImpactsImpact extends CommonDBRelation {
             }
          }
          if ($direction & self::DIRECTION_BACKWARD) {
-            $retparent = $dbu->getAllDataFromTable(self::getTable(), "itemtype_2 = '".$item->getType()."' AND items_id_2=".$item->getID());
+            $restrict = ["itemtype_2" => $item->getType(), 'items_id_2' => $item->getID()];
+            //$retparent = $dbu->getAllDataFromTable(self::getTable(), "itemtype_2 = '".$item->getType()."' AND items_id_2=".$item->getID());
+            $retparent = $dbu->getAllDataFromTable(self::getTable(), $restrict);
             $opitems += $retparent;
             if ($level > 1) {
                foreach ($retparent as $parent) {
@@ -405,26 +410,61 @@ class PluginImpactsImpact extends CommonDBRelation {
       }
 
       $query = "";
-
+      $subQueries=[];
       foreach ($itemtypes as $itemtype) {
+
+         //$sub = new \QuerySubQuery([
+         //   'SELECT' => [
+         //       'rel.id as assocID',
+         //       'rel.date_creation',
+         //       'rel.' . $itemtype_active . ' as itemtype',
+         //       'it.`name`'
+         //   ],
+         //   'FROM'   => self::getTable() .' AS rel',
+         //   'INNER JOIN' 
+         //      => [$dbu->getTableForItemType($itemtype) . ' as it'
+         //         => ['FKEY'  =>[
+         //                'rel'     => $itemtype_active,
+         //                'it' => 'id',
+         //                ['AND'=> [rel.`$itemtype_active`=> ['=' => $itemtype ]]]
+         //              ]
+         //            ]
+         //         ],
+         //   'AND' => [
+         //                  rel.$itemtype_passive => $item->getType(),
+         //                  rel.$items_id_passive => $item->getID()
+         //           ]
+         //         ]);
+
+                        
+         //$subQueries[]=$sub;
+         //$union = new \QueryUnion($subQueries); --- version GLPI 9.4.0
+
+
          if ($query != '') {
             $query .= "\nUNION\n";
          }
+
          $query .= "SELECT rel.id as assocID, rel.date_creation, rel.$itemtype_active as itemtype, rel.$items_id_active as items_id, it.`name`
                FROM ".self::getTable()." AS rel
                JOIN `".$dbu->getTableForItemType($itemtype)."` AS it ON rel.`$itemtype_active`='$itemtype' AND rel.`$items_id_active`=it.`id`
                WHERE rel.$itemtype_passive = '". $item->getType()."' AND rel.$items_id_passive = ".$item->getID();
       }
 
+      
+
       if ($query != '') {
          $query = "SELECT * FROM (\n$query\n) AS elts\nORDER BY $sort $order";
       }
 
       $number = 0; // by default
-      if ($query != '') {         
+      if ($query != '') {
          $result = $DB->request($query);
+        
          $number = count($result);
+
       }
+
 
       $impacts = [];
       if ($number) {

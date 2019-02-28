@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+   <name>Impacts</name>
+   <key>impacts</key>
+   <state>stable</state>
+   <logo>https://raw.githubusercontent.com/tomolimo/impacts/master/impacts.png</logo>
+   <description>
+      <short>
+		   <fr>Ce plugin permet de gerer les impacts entre éléments de l'inventaire.</fr>
+         <en>This plugin enables management of impacts between assets.</en>
+      </short>
+      <long>
+         <en>This plugin adds the impact management between assets (inventory elements). This can be extended to any GLPI object types (or plugin object types).</en>
+		   <fr>Ce plugin ajoute la gestion des impacts entre éléments de l'inventaire. Cette fonctionnalité peut être étendue à n'importe quel type d'objet de GLPI (ou de type d'objet d'un plugin).</fr>
+      </long>
+   </description>
+   <homepage>https://github.com/tomolimo/impacts</homepage>
+   <download>https://github.com/tomolimo/impacts/releases</download>
+   <issues>https://github.com/tomolimo/impacts/issues</issues>
+   <readme>https://github.com/tomolimo/impacts/wiki</readme>
+   <authors>
+      <author>Olivier Moron</author>
+   </authors>
+   <versions>
+     <version>
+       <num>1.1.0</num>
+       <compatibility>9.2</compatibility>
+     </version>
+   </versions>
+   <langs>
+      <lang>en_gb</lang>
+      <lang>fr_fr</lang>
+   </langs>
+   <license>GPL v2+</license>
+   <tags>
+      <fr>
+         <tag>Inventaire</tag>
+         <tag>Impact</tag>
+         <tag>Lien</tag>
+		   <tag>Relation</tag>
+		   <tag>Graphe</tag>
+      </fr>
+      <en>
+         <tag>Inventory</tag>
+         <tag>Impact</tag>
+         <tag>Link</tag>
+		   <tag>Relation</tag>
+		   <tag>Graph</tag>
+      </en>
+   </tags>
+</root>

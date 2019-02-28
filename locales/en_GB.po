@@ -1,0 +1,76 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Impacts\n"
+"POT-Creation-Date: 2019-02-28 11:46+0100\n"
+"PO-Revision-Date: 2019-02-28 11:47+0100\n"
+"Last-Translator: tomolimo\n"
+"Language-Team: English\n"
+"Language: en_GB\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.1.1\n"
+"X-Poedit-Basepath: ..\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: ;__:1,2t;_e:1,2t;_x:1c,2,3t;_n:1,2,4t;__s:1,2t;"
+"_ex:1c,2,3t;_sx:1c,2,3t;_nx:1c,2,3,5t\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: .svn\n"
+"X-Poedit-SearchPathExcluded-1: lib\n"
+"X-Poedit-SearchPathExcluded-2: impacts.png\n"
+"X-Poedit-SearchPathExcluded-3: impacts.xml\n"
+"X-Poedit-SearchPathExcluded-4: impacts-1.1.0.zip\n"
+"X-Poedit-SearchPathExcluded-5: README.md\n"
+
+#: inc/config.class.php:69
+msgid "Asset impact setup"
+msgstr "Asset impact setup"
+
+#: inc/config.class.php:80 inc/config.class.php:148
+msgid "Asset impacts"
+msgstr "Asset impacts"
+
+#: inc/config.class.php:114
+msgid "Asset list"
+msgstr "Asset list"
+
+#: inc/impact.class.php:64
+msgid "Impact"
+msgid_plural "Impacts"
+msgstr[0] "Impact"
+msgstr[1] "Impacts"
+
+#: inc/impact.class.php:227
+#, php-format
+msgid "List of assets impacting %s"
+msgstr "List of assets impacting %s"
+
+#: inc/impact.class.php:230
+#, php-format
+msgid "List of assets impacted by %s"
+msgstr "List of assets impacted by %s"
+
+#: inc/impact.class.php:251
+msgid "Impact graph"
+msgstr "Impact graph"
+
+#: inc/impact.class.php:450
+msgid "Add a new asset"
+msgstr "Add a new asset"
+
+#: inc/impact.class.php:531
+msgid "Empty list"
+msgstr "Empty list"
+
+#~ msgid "%s adds an impact with %s (%s)"
+#~ msgstr "%s adds an impact with %s (%s)"
+
+#~ msgid "Item type"
+#~ msgstr "Item type"
+
+#~ msgid "Name"
+#~ msgstr "Name"
+
+#~ msgid "Date"
+#~ msgstr "Date"

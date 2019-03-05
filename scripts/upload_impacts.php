@@ -2,17 +2,29 @@
 
 include "../../../inc/includes.php";
 
-$types = ['C' => ['itemtype' => 'Computer', 'entities_id' => 0],
-          'A' => ['itemtype' => 'PluginAppliancesAppliance', 'entities_id' => 0],
-          'N' => ['itemtype' => 'NetworkEquipment', 'entities_id' => 0],
-          'S' => ['itemtype' => 'Software', 'entities_id' => 0]
-         ];
+$types = [
+   'C' => [
+      'itemtype'    => 'Computer',
+      'entities_id' => 0
+   ],
+   'A' => [
+      'itemtype'    => 'PluginAppliancesAppliance',
+      'entities_id' => 0
+   ],
+   'N' => [
+      'itemtype'    => 'NetworkEquipment',
+      'entities_id' => 0
+   ],
+   'S' => [
+      'itemtype'    => 'Software',
+      'entities_id' => 0
+   ]
+];
 
 
 function getOrCreateAssset($itemtype, $item_name, $entities_id) {
    $asset = new $itemtype;
-   $dbu = new DbUtils();
-   $row = $dbu->getAllDataFromTable($asset->getTable(), "`name` = '$item_name'");
+   $row = getAllDataFromTable($asset::getTable(), "`name` = '$item_name'");
    if (count($row) == 0) {
       // will create the asset
       $asset_id = $asset->add([ 'name' => $item_name,

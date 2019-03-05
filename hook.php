@@ -49,8 +49,6 @@ function plugin_impacts_install() {
 
 
 function plugin_impacts_uninstall() {
-   global $DB;
-
    return true;
 }
 

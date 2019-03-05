@@ -131,7 +131,9 @@ class PluginImpactsConfig extends CommonDBTM {
 
 
    static function getAssetList($completelist = false) {
-      $list = $_SESSION["glpiactiveprofile"]["helpdesk_item_type"];
+      global $CFG_GLPI;
+
+      $list = $CFG_GLPI["ticket_types"];
       if (!$completelist) {
          $config = self::getInstance();
          $list = $config->fields['assets'];

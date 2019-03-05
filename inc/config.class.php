@@ -35,6 +35,10 @@ class PluginImpactsConfig extends CommonDBTM {
    static private $_instance = null;
    static $rightname = "config";
 
+   static function canCreate() {
+      return self::canUpdate();
+   }
+
    /**
     * Summary of getTypeName
     * @param mixed $nb plural

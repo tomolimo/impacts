@@ -24,7 +24,7 @@ $types = [
 
 function getOrCreateAssset($itemtype, $item_name, $entities_id) {
    $asset = new $itemtype;
-   $row = getAllDataFromTable($asset::getTable(), "`name` = '$item_name'");
+   $row = getAllDatasFromTable($asset::getTable(), ['name' => $item_name]);
    if (count($row) == 0) {
       // will create the asset
       $asset_id = $asset->add([ 'name' => $item_name,
@@ -43,10 +43,10 @@ function getOrCreateAssset($itemtype, $item_name, $entities_id) {
 }
 
 // set new destination for $DB
-$DB->dbhost = 'your mysql host name';
-$DB->dbuser = 'glpi';
-$DB->dbpassword = 'glpi';
-$DB->connect();
+//$DB->dbhost = 'localhost';
+//$DB->dbuser = 'glpi';
+//$DB->dbpassword = 'glpi';
+//$DB->connect();
 if ($DB->connected) {
    if (($handle = fopen('impact_list.csv', "r")) !== false) {
       $line = 0;
@@ -72,7 +72,10 @@ if ($DB->connected) {
          if ($items_id_1 && $items_id_2) {
             $impact = new PluginImpactsImpact;
             // is already existing?
-            if (!$impact->getFromDBByQuery("WHERE `itemtype_1` = '$itemtype_1' AND `items_id_1` = $items_id_1 AND `itemtype_2` = '$itemtype_2' AND `items_id_2` = $items_id_2")) {
+            if (!$impact->getFromDBByCrit(['itemtype_1' => '$itemtype_1',
+                                           'items_id_1' => $items_id_1,
+                                           'itemtype_2' => '$itemtype_2',
+                                           'items_id_2' => $items_id_2])) {
                $impact->add([
                   'itemtype_1' => $itemtype_1,
                   'items_id_1' => $items_id_1,

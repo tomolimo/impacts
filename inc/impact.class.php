@@ -56,78 +56,12 @@ class PluginImpactsImpact extends CommonDBRelation {
    function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
       $nbimpacts = 0;
       if ($_SESSION['glpishow_count_on_tabs']) {
-         //$nbimpacts  = count(self::getImpactedByItem($item));
          self::getOppositeItems($item, $opposite);
          $nbimpacts = count($opposite);
       }
 
       return self::createTabEntry(_n('Impact', 'Impacts', Session::getPluralNumber(), 'impacts'), $nbimpacts);
    }
-
-   ///**
-   // * Summary of getSonsOf
-   // * @param mixed $itemtype
-   // * @param mixed $items_id
-   // * @param mixed $addme
-   // * @param mixed $complete
-   // * @return array
-   // */
-   //static function getSonsOf($itemtype, $items_id, $addme=true, $complete=true) {
-   //   global $DB;
-
-   //   $table = self::getTable();
-   //   $parentIDfield = getForeignKeyFieldForTable($table);
-
-   //   $item = new PluginImpactsItem;
-   //   $item->getFromDBByQuery("WHERE itemtype='$itemtype' AND items_id=$items_id");
-   //   $IDf = $item->fields['id'];
-
-   //   $id_found = [];
-   //   if ($addme) {
-   //      // IDs to be present in the final array
-   //      $id_found[$IDf] = $IDf;
-   //   }
-
-   //   // current ID found to be added
-   //   $found = array();
-   //   // First request init the  variables
-   //   $query = "SELECT `id`
-   //             FROM `$table`
-   //             WHERE `$parentIDfield` = '$IDf'
-   //             ";
-
-   //   if (($result = $DB->query($query))
-   //       && ($DB->numrows($result) > 0)) {
-   //      while ($row = $DB->fetch_assoc($result)) {
-   //         $id_found[$row['id']] = $row['id'];
-   //         $found[$row['id']]    = $row['id'];
-   //      }
-   //   }
-
-   //   // Get the leafs of previous founded item
-   //   while ($complete && count($found) > 0) {
-   //      $first = true;
-   //      // Get next elements
-   //      $query = "SELECT `id`
-   //                FROM `$table`
-   //                WHERE `$parentIDfield` IN ('" . implode("','",$found) . "')";
-
-   //      // CLear the found array
-   //      unset($found);
-   //      $found = array();
-
-   //      $result = $DB->query($query);
-   //      if ($DB->numrows($result) > 0) {
-   //         while ($row = $DB->fetch_assoc($result)) {
-   //            if (!isset($id_found[$row['id']])) {
-   //               $id_found[$row['id']] = $row['id'];
-   //               $found[$row['id']]    = $row['id'];
-   //            }
-   //         }
-   //      }
-   //   }
-   //   return $id_found;
-   //}
 
    /**
     * Summary of getOppositeItems
@@ -142,8 +76,6 @@ class PluginImpactsImpact extends CommonDBRelation {
       }
       if ($level > 0) {
          if ($direction & self::DIRECTION_FORWARD) {
-
-            //$retchild = getAllDatasFromTable(self::getTable(), "itemtype_1 = '".$item::getType()."' AND items_id_1=".$item->fields['id']);
             $retchild = getAllDatasFromTable(self::getTable(), [
                "itemtype_1" => $item::getType(),
                'items_id_1' => $item->fields['id']
@@ -151,7 +83,6 @@ class PluginImpactsImpact extends CommonDBRelation {
             $opitems += $retchild;
             if ($level > 1) {
                foreach ($retchild as $child) {
-                  // if child is already as parent in my list do not browse children for it otherwise we are going to loop
                   $found = false;
                   foreach ($opitems as $elts) {
                      if ($child['itemtype_2'] == $elts['itemtype_1'] && $child['items_id_2'] == $elts['items_id_1']) {
@@ -168,7 +99,6 @@ class PluginImpactsImpact extends CommonDBRelation {
             }
          }
          if ($direction & self::DIRECTION_BACKWARD) {
-            //$retparent = getAllDatasFromTable(self::getTable(), "itemtype_2 = '".$item::getType()."' AND items_id_2=".$item->fields['id']);
             $retparent = getAllDatasFromTable(self::getTable(), [
                "itemtype_2" => $item::getType(),
                'items_id_2' => $item->fields['id']
@@ -297,11 +227,10 @@ class PluginImpactsImpact extends CommonDBRelation {
          if ($data['itemtype'] == $item::getType()
              && $data['items_id'] == $item->fields['id']) {
             // will fixes this node
-            $addOptions = ", shapeProperties: { useBorderWithImage: true } "; // x:0, y: 0, fixed: {x: true, y:true},
+            $addOptions = ", shapeProperties: { useBorderWithImage: true } ";
          }
-         $nodestring .= "{ id: '$id', label: '"./*$data['itemtype']::getTypeName(1).'\n'.*/$temp->fields['name']."', image: '$imgpath/".$data['itemtype'].".png', shape: 'image', urllink: '$link' $addOptions},";
+         $nodestring .= "{ id: '$id', label: '".$temp->fields['name']."', image: '$imgpath/".$data['itemtype'].".png', shape: 'image', urllink: '$link' $addOptions},";
       }
-
 
       $currentID = $item::getType().'['.$item->fields['id'].']';
       $JS = <<<JAVASCRIPT
@@ -318,40 +247,16 @@ class PluginImpactsImpact extends CommonDBRelation {
             edges: edges
          };
          var options = {
-            //layout: {
-            //   randomSeed: 501383,
-
-            //   //hierarchical: {
-            //   //   direction: "UD"
-            //   //}
-            //},
-            //nodes: {
-            //   borderWidth:0,
-            //   //size:30,
-            //   //color: {
-            //   //   border: "#406897",
-            //   //   //background: "#6AAFFF"
-            //   //},
-            //   shapeProperties: {
-            //      useBorderWithImage:false
-            //   }
-            //}
          };
          var network = new vis.Network(container, data, options);
          network.on("doubleClick", function (properties) {
             if (properties.nodes.length > 0) {
                var currentID = "{$currentID}";
                if (currentID != properties.nodes[0]) {
-                  //debugger;
                   document.location.href = nodes.get(properties.nodes[0]).urllink ;
                }
             }
          });
-         //network.on("stabilized", function(event) {
-         //      //debugger;
-         //      var locSeed = this.getSeed();
-         //      //this.focus("{$currentID}");
-         //   });
          network.selectNodes(["{$currentID}"], true);
 JAVASCRIPT;
       echo Html::scriptBlock($JS);
@@ -422,35 +327,6 @@ JAVASCRIPT;
       $query      = "";
       $subQueries = [];
       foreach ($itemtypes as $itemtype) {
-
-         //$sub = new \QuerySubQuery([
-         //   'SELECT' => [
-         //       'rel.id as assocID',
-         //       'rel.date_creation',
-         //       'rel.' . $itemtype_active . ' as itemtype',
-         //       'it.`name`'
-         //   ],
-         //   'FROM'   => self::getTable() .' AS rel',
-         //   'INNER JOIN'
-         //      => [$itemtype::getTable()) . ' as it'
-         //         => ['FKEY'  =>[
-         //                'rel'     => $itemtype_active,
-         //                'it' => 'id',
-         //                ['AND'=> [rel.`$itemtype_active`=> ['=' => $itemtype ]]]
-         //              ]
-         //            ]
-         //         ],
-         //   'AND' => [
-         //                  rel.$itemtype_passive => $item::getType(),
-         //                  rel.$items_id_passive => $item->fields['id']
-         //           ]
-         //         ]);
-
-
-         //$subQueries[]=$sub;
-         //$union = new \QueryUnion($subQueries); --- version GLPI 9.4.0
-
-
          if ($query != '') {
             $query .= "\nUNION\n";
          }
@@ -460,8 +336,6 @@ JAVASCRIPT;
                JOIN `".$itemtype::getTable()."` AS it ON rel.`$itemtype_active`='$itemtype' AND rel.`$items_id_active`=it.`id`
                WHERE rel.$itemtype_passive = '". $item::getType()."' AND rel.$items_id_passive = ".$item->fields['id'];
       }
-
-
 
       if ($query != '') {
          $query = "SELECT * FROM (\n$query\n) AS elts\nORDER BY $sort $order";
@@ -475,15 +349,11 @@ JAVASCRIPT;
 
       }
 
-
       $impacts = [];
       if ($number) {
          foreach ($result as $row) {
             $impacts[$row['assocID']] = $row;
          }
-         //while ($data = $DB->fetch_assoc($result)) {
-         //   $impacts[$data['assocID']] = $data;
-         //}
       }
       echo "<table class='tab_cadre_fixe'>";
       echo "<tr class='tab_bg_2'><th colspan='2'>".sprintf($title, $item->fields['name'])."</th></tr>";
@@ -495,7 +365,6 @@ JAVASCRIPT;
                 action='".Toolbox::getItemTypeFormURL(__CLASS__)."'>";
 
          echo "<table class='tab_cadre_fixe'>";
-         //         echo "<tr class='tab_bg_2'><th colspan='2'>".__('Add a child')."</th></tr>";
 
          echo "<tr class='tab_bg_1'><td>".sprintf(__('Add a new asset', 'impacts'), $item->fields['name'])."</td><td>";
 
@@ -589,197 +458,6 @@ JAVASCRIPT;
       echo "</div>";
    }
 
-
-
-   ///**
-   // * Summary of getAllItemtypes
-   // * return an array of itemtypes for
-   // * 1st level children of the given item
-   // * @param mixed $relItem a PluginImpactsItem object
-   // * @return array
-   // */
-   //static function getAllParentItemtypes(PluginImpactsItem $relItem) {
-   //   $data = self::getAllParentsForItem($relItem);
-   //   $ret = [];
-   //   foreach($data as $rec) {
-   //      $ret[$rec['itemtype']] = $rec['itemtype'];
-   //   }
-   //   return $ret;
-   //}
-
-
-   //static function showParentListForItem(CommonDBTM $item, $options=array()) {
-   //   global $DB, $CFG_GLPI;
-   //   //default options
-   //   $params['rand'] = mt_rand();
-
-   //   if (is_array($options) && count($options)) {
-   //      foreach ($options as $key => $val) {
-   //         $params[$key] = $val;
-   //      }
-   //   }
-
-   //   $canupdate = $item->canUpdateItem() && $item::canView();
-
-   //   $columns = array('itemtype'   => __('Item type'),
-   //                    'name'  => __('Name'),
-   //                    'date_creation'   => __('Date')
-   //                    );
-
-   //   if (isset($_GET["order"]) && ($_GET["order"] == "ASC")) {
-   //      $order = "ASC";
-   //   } else {
-   //      $order = "DESC";
-   //   }
-
-   //   if ((isset($_GET["sort"]) && !empty($_GET["sort"]))
-   //      && isset($columns[$_GET["sort"]])) {
-   //      $sort = "`".$_GET["sort"]."`";
-   //   } else {
-   //      $sort = "`name`";
-   //   }
-
-   //   $relID = -1;
-   //   if ($relitem = PluginImpactsItem::getItemFromDB($item::getType(), $item->fields['id'])) {
-   //      $relID = $relitem->fields['id'];
-   //   }
-
-   //   $itemtypes = self::getAllParentItemtypes($relitem);
-   //   $query = "";
-
-   //   foreach($itemtypes as $itemtype){
-   //      if ($query != '') {
-   //         $query .= "\nUNION\n";
-   //      }
-   //      $query .= "SELECT rel.id as assocID, rel.date_creation, relit.itemtype, relit.items_id, it.`name`
-   //            FROM glpi_plugin_impacts_impacts AS rel
-   //            JOIN glpi_plugin_impacts_items AS relit ON relit.id=rel.plugin_impacts_items_id
-   //            JOIN `".$itemtype::getTable()."` AS it ON relit.`itemtype`='$itemtype' AND it.`id`=relit.`items_id`
-   //            WHERE rel.id IN (
-   //                  SELECT rel.plugin_impacts_impacts_id
-   //                  FROM glpi_plugin_impacts_impacts AS rel
-   //                  WHERE rel.id=$relID
-   //               )";
-   //   }
-
-   //   if ($query != '') {
-   //      $query = "SELECT * FROM (\n$query\n) AS elts\nORDER BY $sort $order";
-   //   }
-
-   //   $result = $DB->query($query);
-   //   $number = $DB->numrows($result);
-
-   //   $impacts = array();
-   //   if ($number) {
-   //      while ($data = $DB->fetch_assoc($result)) {
-   //         $impacts[$data['assocID']] = $data;
-   //      }
-   //   }
-   //   echo "<table class='tab_cadre_fixe'>";
-   //   echo "<tr class='tab_bg_2'><th colspan='2'>".__('Parent list')."</th></tr>";
-   //   echo "</table>";
-
-   //   if ($canupdate) {
-   //      echo "<div class='firstbloc'>";
-   //      echo "<form name='relation_form$rand' id='relation_form$rand' method='post'
-   //             action='".Toolbox::getItemTypeFormURL(__CLASS__)."'>";
-
-   //      echo "<table class='tab_cadre_fixe'>";
-   //      //         echo "<tr class='tab_bg_2'><th colspan='2'>".__('Add a Parent')."</th></tr>";
-
-   //      echo "<tr class='tab_bg_1'><td>";
-
-   //      $allItems = self::getAllParentsForItem($relitem);
-   //      $used = array();
-   //      if (!empty($allItems)) {
-   //         foreach ($allItems as $val) {
-   //            $used[$val['itemtype']][] = $val['items_id'];
-   //         }
-   //      }
-
-   //      self::dropdownAllDevices("add_itemtype", null, 0, 1, 0, -1, ['used' => $used, 'myname' => 'add_items_id']);
-   //      echo "<span id='item_ticket_selection_information'></span>";
-   //      echo "</td><td class='center' width='30%'>";
-   //      echo "<input type='submit' name='add_parent' value=\""._sx('button', 'Add')."\" class='submit'>";
-   //      echo "<input type='hidden' name='itemtype' value='".$item::getType()."'>";
-   //      echo "<input type='hidden' name='items_id' value='".$item->fields['id']."'>";
-   //      echo "</td></tr>";
-   //      echo "</table>";
-   //      Html::closeForm();
-   //      echo "</div>";
-   //   }
-
-   //   echo "<div class='spaced'>";
-
-   //   if ($canupdate
-   //       && $number) {
-   //      Html::openMassiveActionsForm('mass'.__CLASS__.$params['rand']);
-   //      $massiveactionparams = array('num_displayed'  => $number,
-   //                                   'container'      => 'mass'.__CLASS__.$params['rand']);
-   //      Html::showMassiveActions($massiveactionparams);
-   //   }
-
-   //   $sort_img = "<img src=\"" . $CFG_GLPI["root_doc"] . "/pics/" .
-   //                 (($order == "DESC") ? "puce-down.png" : "puce-up.png") ."\" alt='' title=''>";
-
-   //   echo "<table class='tab_cadre_fixehov'>";
-
-   //   $header_begin  = "<tr>";
-   //   $header_top    = '';
-   //   $header_bottom = '';
-   //   $header_end    = '';
-   //   if ($canupdate
-   //       && $number) {
-   //      $header_top    .= "<th width='11'>".Html::getCheckAllAsCheckbox('mass'.__CLASS__.$params['rand']);
-   //      $header_top    .= "</th>";
-   //      $header_bottom .= "<th width='11'>".Html::getCheckAllAsCheckbox('mass'.__CLASS__.$params['rand']);
-   //      $header_bottom .= "</th>";
-   //   }
-
-   //   foreach ($columns as $key => $val) {
-   //      $header_end .= "<th>".(($sort == "`$key`") ?$sort_img:"").
-   //                     "<a href='javascript:reloadTab(\"sort=$key&amp;order=".
-   //                       (($order == "ASC") ?"DESC":"ASC")."&amp;start=0\");'>$val</a></th>";
-   //   }
-
-   //   $header_end .= "</tr>";
-   //   echo $header_begin.$header_top.$header_end;
-
-   //   if ($number) {
-   //      foreach  ($impacts as $data) {
-   //         $items_id = $data["items_id"];
-   //         $itemtype = $data['itemtype'];
-   //         $link         = NOT_AVAILABLE;
-   //         $subitem = new $itemtype;
-
-   //         if ($subitem->getFromDB($items_id)) {
-   //            $link         = $subitem->getLink();
-   //         }
-
-   //         echo "<tr class='tab_bg_1".($subitem->fields["is_deleted"]?"_2":"")."'>";
-   //         if ($canupdate) {
-   //            echo "<td width='10'>";
-   //            Html::showMassiveActionCheckBox(__CLASS__, $data["assocID"]);
-   //            echo "</td>";
-   //         }
-   //         echo "<td class='center'>".$data['itemtype']::getTypeName(1)."</td>";
-   //         echo "<td class='center'>".$link."</td>";
-   //         echo "<td class='center'>".Html::convDateTime($data["date_creation"])."</td>";
-   //         echo "</tr>";
-   //      }
-   //      echo $header_begin.$header_bottom.$header_end;
-   //   }
-
-   //   echo "</table>";
-   //   if ($canupdate && $number) {
-   //      $massiveactionparams['ontop'] = false;
-   //      Html::showMassiveActions($massiveactionparams);
-   //      Html::closeForm();
-   //   }
-   //   echo "</div>";
-   //}
-
-
    /**
     * Show a select box for adding All Devices
     *
@@ -822,11 +500,8 @@ JAVASCRIPT;
          echo "<div id='relation_all_devices$rand'>";
          if ($_SESSION["glpiactiveprofile"]["helpdesk_hardware"]&pow(2,
                                                                      Ticket::HELPDESK_ALL_HARDWARE)) {
-            $types = PluginImpactsConfig::getAssetList(); // Ticket::getAllTypesForHelpdesk();
+            $types = PluginImpactsConfig::getAssetList();
             $emptylabel = Dropdown::EMPTY_VALUE;
-            //if ($params['tickets_id'] > 0) {
-            //   $emptylabel = Dropdown::EMPTY_VALUE;
-            //}
             Dropdown::showItemTypes($myname, array_keys($types), [
                'emptylabel'          => $emptylabel,
                'value'               => $itemtype,

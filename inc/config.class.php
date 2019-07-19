@@ -133,7 +133,19 @@ class PluginImpactsConfig extends CommonDBTM {
    static function getAssetList($completelist = false) {
       global $CFG_GLPI;
 
-      $list = $CFG_GLPI["ticket_types"];
+      $regex = '/types/m';
+      $listTemp = [];
+      foreach ($CFG_GLPI as $k => $type) {
+         if (preg_match_all($regex, $k, $matches, PREG_SET_ORDER, 0)) {
+            foreach ($type as $val) {
+               if (strcmp($val, '*')) {
+                  array_push($listTemp, $val);
+               }
+            }
+         }
+      }
+      $list = array_unique($listTemp);
+
       if (!$completelist) {
          $config = self::getInstance();
          $list = $config->fields['assets'];
@@ -141,7 +153,7 @@ class PluginImpactsConfig extends CommonDBTM {
       $ret = [];
       foreach ($list  as $lo) {
          if (class_exists($lo)) {
-            $ret[$lo] = $lo::getTypeName(Session::getPluralNumber());
+            $ret[$lo] = $lo::getTypeName(Session::getPluralNumber())." ($lo)";
          }
       }
       asort($ret, SORT_STRING);

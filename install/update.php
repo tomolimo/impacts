@@ -11,16 +11,16 @@ function impacts_update() {
       include_once(GLPI_ROOT."/plugins/impacts/inc/config.class.php");
       $config = PluginImpactsConfig::getInstance();
       $current_version = $config->fields['db_version'];
-	  if (empty($current_version)) $current_version = '1.0.0';
+      if (empty($current_version)) {
+         $current_version = '1.0.0';
+      }
    }
 
-   switch ($current_version) {
-      case '1.1.0' :
-         // will upgrade any old versions (< 3.2.8) to 3.2.8
-          //include_once(GLPI_ROOT."/plugins/impacts/install/update_to_X_X_X.php");
-          //$new_version = update_to_X_X_X();
-
-   }
+   //switch ($current_version) {
+   //   case '1.1.0' :
+   //       //include_once(GLPI_ROOT."/plugins/impacts/install/update_to_X_X_X.php");
+   //       //$new_version = update_to_X_X_X();
+   //}
 
    if (isset($new_version)) {
       // end update by updating the db version number

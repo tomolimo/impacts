@@ -35,9 +35,9 @@ if (!defined('GLPI_ROOT')) {
  * Manage impactship between assets
  */
 class PluginImpactsImpact extends CommonDBRelation {
-   const DIRECTION_FORWARD = 1;
+   const DIRECTION_FORWARD  = 1;
    const DIRECTION_BACKWARD = 2;
-   const DIRECTION_BOTH = 3;
+   const DIRECTION_BOTH     = 3;
 
    static public $itemtype_1 = 'itemtype_1'; // Type ref or field name (must start with itemtype)
    static public $items_id_1 = 'items_id_1'; // Field name
@@ -80,7 +80,7 @@ class PluginImpactsImpact extends CommonDBRelation {
 
    //   $item = new PluginImpactsItem;
    //   $item->getFromDBByQuery("WHERE itemtype='$itemtype' AND items_id=$items_id");
-   //   $IDf = $item->getID();
+   //   $IDf = $item->fields['id'];
 
    //   $id_found = [];
    //   if ($addme) {
@@ -137,18 +137,17 @@ class PluginImpactsImpact extends CommonDBRelation {
     * @param mixed $level
     */
    static function getOppositeItems(CommonGLPI $item, &$opitems, $direction = self::DIRECTION_BOTH, $level = 1) {
-
-      $dbu = new DbUtils;
-
       if (!isset($opitems)) {
          $opitems = [];
       }
       if ($level > 0) {
          if ($direction & self::DIRECTION_FORWARD) {
 
-            $restrict = ["itemtype_1" => $item->getType(), 'items_id_1' => $item->getID()];
-            //$retchild = $dbu->getAllDataFromTable(self::getTable(), "itemtype_1 = '".$item->getType()."' AND items_id_1=".$item->getID());
-            $retchild = $dbu->getAllDataFromTable(self::getTable(), $restrict);
+            //$retchild = getAllDatasFromTable(self::getTable(), "itemtype_1 = '".$item::getType()."' AND items_id_1=".$item->fields['id']);
+            $retchild = getAllDatasFromTable(self::getTable(), [
+               "itemtype_1" => $item::getType(),
+               'items_id_1' => $item->fields['id']
+            ]);
             $opitems += $retchild;
             if ($level > 1) {
                foreach ($retchild as $child) {
@@ -169,9 +168,11 @@ class PluginImpactsImpact extends CommonDBRelation {
             }
          }
          if ($direction & self::DIRECTION_BACKWARD) {
-            $restrict = ["itemtype_2" => $item->getType(), 'items_id_2' => $item->getID()];
-            //$retparent = $dbu->getAllDataFromTable(self::getTable(), "itemtype_2 = '".$item->getType()."' AND items_id_2=".$item->getID());
-            $retparent = $dbu->getAllDataFromTable(self::getTable(), $restrict);
+            //$retparent = getAllDatasFromTable(self::getTable(), "itemtype_2 = '".$item::getType()."' AND items_id_2=".$item->fields['id']);
+            $retparent = getAllDatasFromTable(self::getTable(), [
+               "itemtype_2" => $item::getType(),
+               'items_id_2' => $item->fields['id']
+            ]);
             $opitems += $retparent;
             if ($level > 1) {
                foreach ($retparent as $parent) {
@@ -203,9 +204,7 @@ class PluginImpactsImpact extends CommonDBRelation {
     * @return mixed
     */
    static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
-
-      self::showForItem($item);
-      return true;
+      return self::showForItem($item);
    }
 
 
@@ -215,24 +214,21 @@ class PluginImpactsImpact extends CommonDBRelation {
     * @return boolean
     */
    static function showForItem(CommonGLPI $item) {
-      $ID = $item->getID();
-
-      if ($item->isNewID($ID)) {
+      if ($item->isNewItem()) {
          return false;
       }
 
-      $itemtype = $item->getType();
-      if (!$itemtype::canView()) {
+      if (!$item::canView()) {
          return false;
       }
 
-      $params         = [];
-      $params['rand'] = mt_rand();
+      self::showOppositeListForItem($item, self::DIRECTION_BACKWARD, __('List of assets impacting %s', 'impacts'), [
+         'rand' => mt_rand()
+      ]);
 
-      self::showOppositeListForItem($item, self::DIRECTION_BACKWARD, __('List of assets impacting %s', 'impacts'), $params);
-
-      $params['rand'] = mt_rand();
-      self::showOppositeListForItem($item, self::DIRECTION_FORWARD, __('List of assets impacted by %s', 'impacts'), $params);
+      self::showOppositeListForItem($item, self::DIRECTION_FORWARD, __('List of assets impacted by %s', 'impacts'), [
+         'rand' => mt_rand()
+      ]);
       self::showImpactNetwork($item, PHP_INT_MAX);
       return true;
    }
@@ -263,7 +259,12 @@ class PluginImpactsImpact extends CommonDBRelation {
       if (count($oppositeItems) == 0) {
          // there is no impacts
          // must add current item
-         $oppositeItems[] = ['itemtype_1' => $item->getType(), 'items_id_1' => $item->getID(), 'itemtype_2' => $item->getType(), 'items_id_2' => $item->getID()];
+         $oppositeItems[] = [
+            'itemtype_1' => $item::getType(),
+            'items_id_1' => $item->fields['id'],
+            'itemtype_2' => $item::getType(),
+            'items_id_2' => $item->fields['id']
+         ];
       }
 
       $nodes = [];
@@ -271,8 +272,14 @@ class PluginImpactsImpact extends CommonDBRelation {
       foreach ($oppositeItems as $data) {
          $idfrom = $data['itemtype_1']."[".$data['items_id_1']."]";
          $idto = $data['itemtype_2']."[".$data['items_id_2']."]";
-         $nodes[$idfrom] = ['itemtype' => $data['itemtype_1'], 'items_id' => $data['items_id_1']];
-         $nodes[$idto] = ['itemtype' => $data['itemtype_2'], 'items_id' => $data['items_id_2']];
+         $nodes[$idfrom] = [
+            'itemtype' => $data['itemtype_1'],
+            'items_id' => $data['items_id_1']
+         ];
+         $nodes[$idto] = [
+            'itemtype' => $data['itemtype_2'],
+            'items_id' => $data['items_id_2']
+         ];
          $edgestring .= "{ from: '".$idfrom."', to: '".$idto."', arrows: 'to' },";
       }
 
@@ -287,19 +294,22 @@ class PluginImpactsImpact extends CommonDBRelation {
          $temp->getFromDB($data['items_id']);
          $link = $temp->getLinkURL();
          $addOptions = "";
-         if ($data['itemtype'] == $item->getType() && $data['items_id'] == $item->getID()) {
+         if ($data['itemtype'] == $item::getType()
+             && $data['items_id'] == $item->fields['id']) {
             // will fixes this node
             $addOptions = ", shapeProperties: { useBorderWithImage: true } "; // x:0, y: 0, fixed: {x: true, y:true},
          }
          $nodestring .= "{ id: '$id', label: '"./*$data['itemtype']::getTypeName(1).'\n'.*/$temp->fields['name']."', image: '$imgpath/".$data['itemtype'].".png', shape: 'image', urllink: '$link' $addOptions},";
       }
 
-      echo '<script type="text/javascript">
+
+      $currentID = $item::getType().'['.$item->fields['id'].']';
+      $JS = <<<JAVASCRIPT
          // create an array with nodes
-         var nodes = new vis.DataSet(['.$nodestring.']);
+         var nodes = new vis.DataSet([{$nodestring}]);
 
          // create an array with edges
-         var edges = new vis.DataSet(['.$edgestring.']);
+         var edges = new vis.DataSet([{$edgestring}]);
 
          // create a network
          var container = document.getElementById("mynetwork");
@@ -329,21 +339,22 @@ class PluginImpactsImpact extends CommonDBRelation {
          };
          var network = new vis.Network(container, data, options);
          network.on("doubleClick", function (properties) {
-               if (properties.nodes.length > 0) {
-                  var currentID = "'.$item->getType().'['.$item->getID().']";
-                  if (currentID != properties.nodes[0]) {
-                     //debugger;
-                     document.location.href = nodes.get(properties.nodes[0]).urllink ;
-                  }
-              }
-            });
+            if (properties.nodes.length > 0) {
+               var currentID = "{$currentID}";
+               if (currentID != properties.nodes[0]) {
+                  //debugger;
+                  document.location.href = nodes.get(properties.nodes[0]).urllink ;
+               }
+            }
+         });
          //network.on("stabilized", function(event) {
          //      //debugger;
          //      var locSeed = this.getSeed();
-         //      //this.focus("'.$item->getType().'['.$item->getID().']'.'");
+         //      //this.focus("{$currentID}");
          //   });
-         network.selectNodes(["'.$item->getType().'['.$item->getID().']'.'"], true);
-      </script>';
+         network.selectNodes(["{$currentID}"], true);
+JAVASCRIPT;
+      echo Html::scriptBlock($JS);
 
    }
 
@@ -355,9 +366,7 @@ class PluginImpactsImpact extends CommonDBRelation {
     * @param mixed $options
     */
    static function showOppositeListForItem(CommonGLPI $item, $direction, $title, $options = []) {
-      global $DB, $CFG_GLPI;
-
-      $dbu = new DbUtils;
+      global $DB;
 
       // by default for self::DIRECTION_FORWARD
       $itemtype_active = 'itemtype_2';
@@ -381,13 +390,14 @@ class PluginImpactsImpact extends CommonDBRelation {
          }
       }
 
-      $itemtype = $item->getType();
+      $itemtype  = $item::getType();
       $canupdate = $item->canUpdateItem() && $itemtype::canView();
 
-      $columns = ['itemtype'   => __('Item type'),
-                       'name'  => __('Name'),
-                       'date_creation'   => __('Date')
-                       ];
+      $columns = [
+         'itemtype'      => __('Item type'),
+         'name'          => __('Name'),
+         'date_creation' => __('Date')
+      ];
 
       if (isset($_GET["order"]) && ($_GET["order"] == "DESC")) {
          $order = "DESC";
@@ -405,12 +415,12 @@ class PluginImpactsImpact extends CommonDBRelation {
       self::getOppositeItems($item, $oppositeItems, $direction);
 
       $itemtypes = [];
-      foreach ($oppositeItems  as $rec) {
+      foreach ($oppositeItems as $rec) {
          $itemtypes[$rec[$itemtype_active]] = $rec[$itemtype_active];
       }
 
-      $query = "";
-      $subQueries=[];
+      $query      = "";
+      $subQueries = [];
       foreach ($itemtypes as $itemtype) {
 
          //$sub = new \QuerySubQuery([
@@ -421,8 +431,8 @@ class PluginImpactsImpact extends CommonDBRelation {
          //       'it.`name`'
          //   ],
          //   'FROM'   => self::getTable() .' AS rel',
-         //   'INNER JOIN' 
-         //      => [$dbu->getTableForItemType($itemtype) . ' as it'
+         //   'INNER JOIN'
+         //      => [$itemtype::getTable()) . ' as it'
          //         => ['FKEY'  =>[
          //                'rel'     => $itemtype_active,
          //                'it' => 'id',
@@ -431,12 +441,12 @@ class PluginImpactsImpact extends CommonDBRelation {
          //            ]
          //         ],
          //   'AND' => [
-         //                  rel.$itemtype_passive => $item->getType(),
-         //                  rel.$items_id_passive => $item->getID()
+         //                  rel.$itemtype_passive => $item::getType(),
+         //                  rel.$items_id_passive => $item->fields['id']
          //           ]
          //         ]);
 
-                        
+
          //$subQueries[]=$sub;
          //$union = new \QueryUnion($subQueries); --- version GLPI 9.4.0
 
@@ -447,11 +457,11 @@ class PluginImpactsImpact extends CommonDBRelation {
 
          $query .= "SELECT rel.id as assocID, rel.date_creation, rel.$itemtype_active as itemtype, rel.$items_id_active as items_id, it.`name`
                FROM ".self::getTable()." AS rel
-               JOIN `".$dbu->getTableForItemType($itemtype)."` AS it ON rel.`$itemtype_active`='$itemtype' AND rel.`$items_id_active`=it.`id`
-               WHERE rel.$itemtype_passive = '". $item->getType()."' AND rel.$items_id_passive = ".$item->getID();
+               JOIN `".$itemtype::getTable()."` AS it ON rel.`$itemtype_active`='$itemtype' AND rel.`$items_id_active`=it.`id`
+               WHERE rel.$itemtype_passive = '". $item::getType()."' AND rel.$items_id_passive = ".$item->fields['id'];
       }
 
-      
+
 
       if ($query != '') {
          $query = "SELECT * FROM (\n$query\n) AS elts\nORDER BY $sort $order";
@@ -460,7 +470,7 @@ class PluginImpactsImpact extends CommonDBRelation {
       $number = 0; // by default
       if ($query != '') {
          $result = $DB->request($query);
-        
+
          $number = count($result);
 
       }
@@ -468,7 +478,7 @@ class PluginImpactsImpact extends CommonDBRelation {
 
       $impacts = [];
       if ($number) {
-         foreach ($result as $id => $row) {
+         foreach ($result as $row) {
             $impacts[$row['assocID']] = $row;
          }
          //while ($data = $DB->fetch_assoc($result)) {
@@ -490,7 +500,7 @@ class PluginImpactsImpact extends CommonDBRelation {
          echo "<tr class='tab_bg_1'><td>".sprintf(__('Add a new asset', 'impacts'), $item->fields['name'])."</td><td>";
 
          $used = [];
-         $used[$item->getType()][] = $item->getID(); // to prevent re-use of current item on itself
+         $used[$item::getType()][] = $item->fields['id']; // to prevent re-use of current item on itself
          foreach ($oppositeItems  as $val) {
             $used[$val[$itemtype_active]][] = $val[$items_id_active];
          }
@@ -498,9 +508,9 @@ class PluginImpactsImpact extends CommonDBRelation {
          self::dropdownAllDevices($itemtype_active, null, 0, 1, 0, -1, ['used' => $used, 'myname' => $items_id_active]);
          echo "<span id='item_ticket_selection_information'></span>";
          echo "</td><td class='center' width='30%'>";
-         echo "<input type='submit' name='add' value=\""._sx('button', 'Add')."\" class='submit'>";
-         echo "<input type='hidden' name='$itemtype_passive' value='".$item->getType()."'>";
-         echo "<input type='hidden' name='$items_id_passive' value='".$item->getID()."'>";
+         echo Html::submit(_sx('button', 'Add'), ['name' => 'add']);
+         echo Html::hidden($itemtype_passive, ['value' => $item::getType()]);
+         echo Html::hidden($items_id_passive, ['value' => $item->fields['id']]);
          echo "</td></tr>";
          echo "</table>";
          Html::closeForm();
@@ -600,7 +610,6 @@ class PluginImpactsImpact extends CommonDBRelation {
 
    //static function showParentListForItem(CommonDBTM $item, $options=array()) {
    //   global $DB, $CFG_GLPI;
-   //   $dbu = new DbUtils;
    //   //default options
    //   $params['rand'] = mt_rand();
 
@@ -610,7 +619,7 @@ class PluginImpactsImpact extends CommonDBRelation {
    //      }
    //   }
 
-   //   $canupdate = $item->canUpdateItem() && $item->getType()::canView();
+   //   $canupdate = $item->canUpdateItem() && $item::canView();
 
    //   $columns = array('itemtype'   => __('Item type'),
    //                    'name'  => __('Name'),
@@ -631,8 +640,8 @@ class PluginImpactsImpact extends CommonDBRelation {
    //   }
 
    //   $relID = -1;
-   //   if ($relitem = PluginImpactsItem::getItemFromDB($item->getType(), $item->getID())) {
-   //      $relID = $relitem->getID();
+   //   if ($relitem = PluginImpactsItem::getItemFromDB($item::getType(), $item->fields['id'])) {
+   //      $relID = $relitem->fields['id'];
    //   }
 
    //   $itemtypes = self::getAllParentItemtypes($relitem);
@@ -645,7 +654,7 @@ class PluginImpactsImpact extends CommonDBRelation {
    //      $query .= "SELECT rel.id as assocID, rel.date_creation, relit.itemtype, relit.items_id, it.`name`
    //            FROM glpi_plugin_impacts_impacts AS rel
    //            JOIN glpi_plugin_impacts_items AS relit ON relit.id=rel.plugin_impacts_items_id
-   //            JOIN `".$dbu->getTableForItemType($itemtype)."` AS it ON relit.`itemtype`='$itemtype' AND it.`id`=relit.`items_id`
+   //            JOIN `".$itemtype::getTable()."` AS it ON relit.`itemtype`='$itemtype' AND it.`id`=relit.`items_id`
    //            WHERE rel.id IN (
    //                  SELECT rel.plugin_impacts_impacts_id
    //                  FROM glpi_plugin_impacts_impacts AS rel
@@ -692,8 +701,8 @@ class PluginImpactsImpact extends CommonDBRelation {
    //      echo "<span id='item_ticket_selection_information'></span>";
    //      echo "</td><td class='center' width='30%'>";
    //      echo "<input type='submit' name='add_parent' value=\""._sx('button', 'Add')."\" class='submit'>";
-   //      echo "<input type='hidden' name='itemtype' value='".$item->getType()."'>";
-   //      echo "<input type='hidden' name='items_id' value='".$item->getID()."'>";
+   //      echo "<input type='hidden' name='itemtype' value='".$item::getType()."'>";
+   //      echo "<input type='hidden' name='items_id' value='".$item->fields['id']."'>";
    //      echo "</td></tr>";
    //      echo "</table>";
    //      Html::closeForm();
@@ -790,12 +799,14 @@ class PluginImpactsImpact extends CommonDBRelation {
     **/
    static function dropdownAllDevices($myname, $itemtype, $items_id = 0, $admin = 0, $users_id = 0,
                                       $entity_restrict = -1, $options = []) {
-      global $CFG_GLPI, $DB;
+      global $CFG_GLPI;
 
-      $params = ['used'       => [],
-                      'multiple'   => 0,
-                      'rand'       => mt_rand(),
-                      'myname'     => 'items_id'];
+      $params = [
+         'used'     => [],
+         'multiple' => 0,
+         'rand'     => mt_rand(),
+         'myname'   => 'items_id'
+      ];
 
       foreach ($options as $key => $val) {
          $params[$key] = $val;
@@ -804,8 +815,8 @@ class PluginImpactsImpact extends CommonDBRelation {
       $rand = $params['rand'];
 
       if ($_SESSION["glpiactiveprofile"]["helpdesk_hardware"] == 0) {
-         echo "<input type='hidden' name='$myname' value=''>";
-         echo "<input type='hidden' name='{$params['myname']}' value='0'>";
+         echo Html::hidden($myname, ['value' => '']);
+         echo Html::hidden($params['myname'], ['value' => 0]);
 
       } else {
          echo "<div id='relation_all_devices$rand'>";
@@ -816,24 +827,28 @@ class PluginImpactsImpact extends CommonDBRelation {
             //if ($params['tickets_id'] > 0) {
             //   $emptylabel = Dropdown::EMPTY_VALUE;
             //}
-            Dropdown::showItemTypes($myname, array_keys($types),
-                                    ['emptylabel' => $emptylabel,
-                                          'value'      => $itemtype,
-                                          'rand'       => $rand, 'display_emptychoice' => true]);
+            Dropdown::showItemTypes($myname, array_keys($types), [
+               'emptylabel'          => $emptylabel,
+               'value'               => $itemtype,
+               'rand'                => $rand,
+               'display_emptychoice' => true
+            ]);
             //$found_type = isset($types[$itemtype]);
 
-            $p = ['itemtype'        => '__VALUE__',
-                       'entity_restrict' => $entity_restrict,
-                       'admin'           => $admin,
-                       'used'            => $params['used'],
-                       'multiple'        => $params['multiple'],
-                       'rand'            => $rand,
-                       'myname'          => $params['myname']];
-
-            Ajax::updateItemOnSelectEvent("dropdown_$myname$rand", "results_$myname$rand",
-                                          $CFG_GLPI["root_doc"].
-                                             "/ajax/dropdownTrackingDeviceType.php",
-                                          $p);
+            Ajax::updateItemOnSelectEvent(
+               "dropdown_$myname$rand",
+               "results_$myname$rand",
+               $CFG_GLPI["root_doc"]."/ajax/dropdownAllItems.php",
+               [
+                  'idtable'         => '__VALUE__',
+                  'name'            => $params['myname'],
+                  'rand'            => $rand,
+                  'used'            => $params['used'],
+                  'admin'           => $admin,
+                  'multiple'        => $params['multiple'],
+                  'entity_restrict' => $entity_restrict,
+               ]
+            );
             echo "<span id='results_$myname$rand'>\n";
 
             echo "</span>\n";

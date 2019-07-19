@@ -32,13 +32,18 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 // ----------------------------------------------------------------------
 
 
-define('IMPACTS_VERSION', '1.2.0');
+define('IMPACTS_VERSION', '1.3.0');
+
+// Minimal GLPI version, inclusive
+define("IMPACTS_MIN_GLPI", "9.3");
+// Maximum GLPI version, exclusive
+define("IMPACTS_MAX_GLPI", "9.5");
 
 /**
  * Summary of plugin_init_impacts
  */
 function plugin_init_impacts() {
-   global $PLUGIN_HOOKS, $CFG_GLPI;
+   global $PLUGIN_HOOKS;
 
    $plugin = new Plugin();
    if ($plugin->isInstalled('impacts')
@@ -66,19 +71,20 @@ function plugin_init_impacts() {
  */
 function plugin_version_impacts() {
 
-   return ['name'           => 'Asset impacts',
-                'version'        => IMPACTS_VERSION,
-                'author'         => 'Olivier Moron',
-                'license'        => 'GPLv2+',
-                'homepage'       => 'https://github.com/tomolimo/impacts',
-                'requirements'   => [
-                  'glpi'   => [
-                     'min' => '9.3',
-                     'max' => '9.3.99',
-                     //'plugins' => ['appliances', 'accounts']
-                  ]
-                ]
-                ];
+   return [
+      'name'           => 'Asset impacts',
+      'version'        => IMPACTS_VERSION,
+      'author'         => 'Olivier Moron',
+      'license'        => 'GPLv2+',
+      'homepage'       => 'https://github.com/tomolimo/impacts',
+      'requirements'   => [
+         'glpi'   => [
+            'min' => IMPACTS_MIN_GLPI,
+            'max' => IMPACTS_MAX_GLPI,
+            //'plugins' => ['appliances', 'accounts']
+         ]
+      ]
+   ];
 }
 
 
@@ -87,13 +93,6 @@ function plugin_version_impacts() {
  * @return bool
  */
 function plugin_impacts_check_prerequisites() {
-   global $DB, $LANG;
-
-   // Strict version check (could be less strict, or could allow various version)
-   if (version_compare(GLPI_VERSION, '9.3', 'lt')) {
-      return false;
-   }
-
    return true;
 }
 
@@ -104,7 +103,6 @@ function plugin_impacts_check_prerequisites() {
  * @return bool
  */
 function plugin_impacts_check_config($verbose = false) {
-
    return true;
 }
 

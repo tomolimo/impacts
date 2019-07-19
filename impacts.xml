@@ -10,8 +10,12 @@
          <en>This plugin enables management of impacts between assets.</en>
       </short>
       <long>
-         <en>This plugin adds the impact management between assets (inventory elements). This can be extended to any GLPI object types (or plugin object types).</en>
-		   <fr>Ce plugin ajoute la gestion des impacts entre éléments de l'inventaire. Cette fonctionnalité peut être étendue à n'importe quel type d'objet de GLPI (ou de type d'objet d'un plugin).</fr>
+         <en>This plugin adds the impact management between assets (inventory elements). This can be extended to any GLPI object types (or plugin object types).
+
+*Icon credit: Network by priyanka from the Noun Project*</en>
+		   <fr>Ce plugin ajoute la gestion des impacts entre éléments de l'inventaire. Cette fonctionnalité peut être étendue à n'importe quel type d'objet de GLPI (ou de type d'objet d'un plugin).
+
+*Icon credit: Network by priyanka from the Noun Project*</fr>
       </long>
    </description>
    <homepage>https://github.com/tomolimo/impacts</homepage>
@@ -28,6 +32,11 @@
       </version>
       <version>
          <num>1.2.0</num>
+         <compatibility>9.3</compatibility>
+      </version>
+      <version>
+         <num>1.3.0</num>
+         <compatibility>9.4</compatibility>
          <compatibility>9.3</compatibility>
       </version>
    </versions>
@@ -52,4 +61,8 @@
 		   <tag>Graph</tag>
       </en>
    </tags>
+   <screenshots>
+      <screenshot>https://github.com/tomolimo/impacts/raw/master/screenshots/graph.png</screenshot>
+      <screenshot>https://github.com/tomolimo/impacts/raw/master/screenshots/form.png</screenshot>
+   </screenshots>
 </root>

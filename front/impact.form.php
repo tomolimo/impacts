@@ -31,23 +31,20 @@ include ( "../../../inc/includes.php");
 Session::checkLoginUser();
 
 if (isset($_POST['add'])
-    && isset($_POST['itemtype_1']) && isset($_POST['items_id_1'])
-    && isset($_POST['itemtype_2']) && isset($_POST['items_id_2'])) {
-
+    && isset($_POST['itemtype_1']) && isset($_POST['items_id_1']) && $_POST['items_id_1'] > 0
+    && isset($_POST['itemtype_2']) && isset($_POST['items_id_2']) && $_POST['items_id_2'] > 0
+    && class_exists($_POST['itemtype_1'])) {
+   
    $item = new $_POST['itemtype_1'];
    $item->check(-1, UPDATE, $_POST);
 
    $item = new PluginImpactsImpact;
-   if (isset($_POST['add'])) {
-
-      if ($item->add($_POST)) {
-         Glpi\Event::log($_POST["items_id_1"], $_POST["itemtype_1"], 4, "inventory",
-                     //TRANS: %s is the user login
-                     sprintf(__('%s adds an impact with %s (%s)'), $_SESSION["glpiname"], $_POST["itemtype_2"]::getTypeName(1), $_POST["items_id_2"]));
-      }
-      Html::back();
+   if ($item->add($_POST)) {
+      Glpi\Event::log($_POST["items_id_1"], $_POST["itemtype_1"], 4, "inventory",
+                  //TRANS: %s is the user login
+                  sprintf(__('%s adds an impact with %s (%s)'), $_SESSION["glpiname"], $_POST["itemtype_2"]::getTypeName(1), $_POST["items_id_2"]));
    }
-
+   Html::back();
 }
 
 Html::displayErrorAndDie("lost");

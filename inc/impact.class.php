@@ -324,29 +324,41 @@ JAVASCRIPT;
          $itemtypes[$rec[$itemtype_active]] = $rec[$itemtype_active];
       }
 
-      $query      = "";
+      $query = [];
       $subQueries = [];
       foreach ($itemtypes as $itemtype) {
-         if ($query != '') {
-            $query .= "\nUNION\n";
-         }
-
-         $query .= "SELECT rel.id as assocID, rel.date_creation, rel.$itemtype_active as itemtype, rel.$items_id_active as items_id, it.`name`
-               FROM ".self::getTable()." AS rel
-               JOIN `".$itemtype::getTable()."` AS it ON rel.`$itemtype_active`='$itemtype' AND rel.`$items_id_active`=it.`id`
-               WHERE rel.$itemtype_passive = '". $item::getType()."' AND rel.$items_id_passive = ".$item->fields['id'];
+         $subQueries[] = [
+               'SELECT'     => ["rel.id AS assocID", "rel.date_creation", "rel.$itemtype_active AS itemtype", "rel.$items_id_active AS items_id", "it.name"],
+               'FROM'       => self::getTable()." AS rel",
+               'INNER JOIN' => [$itemtype::getTable()." AS it" => [
+                  'FKEY' => [
+                           'rel' => $items_id_active,
+                           'it'  => 'id',
+                           ['AND' => [
+                              "rel.$itemtype_active" => $itemtype
+                              ]
+                           ]
+                     ]
+                  ]
+               ],
+               'WHERE'      => [
+                  'AND' => [
+                     "rel.$itemtype_passive" => $item::getType(), 
+                     "rel.$items_id_passive" => $item->fields['id']
+                  ]
+               ]
+            ];
       }
-
-      if ($query != '') {
-         $query = "SELECT * FROM (\n$query\n) AS elts\nORDER BY $sort $order";
+      if(count($subQueries) > 1) {
+         $query = new QueryUnion($subQueries, true);
+      } elseif(count($subQueries) == 1) {
+         $query = $subQueries[0];
       }
 
       $number = 0; // by default
-      if ($query != '') {
+      if(!empty($query)) {
          $result = $DB->request($query);
-
          $number = count($result);
-
       }
 
       $impacts = [];
@@ -492,44 +504,35 @@ JAVASCRIPT;
 
       $rand = $params['rand'];
 
-      if ($_SESSION["glpiactiveprofile"]["helpdesk_hardware"] == 0) {
-         echo Html::hidden($myname, ['value' => '']);
-         echo Html::hidden($params['myname'], ['value' => 0]);
+      echo "<div id='relation_all_devices$rand'>";
+      $types = PluginImpactsConfig::getAssetList();
+      $emptylabel = Dropdown::EMPTY_VALUE;
+      Dropdown::showItemTypes($myname, array_keys($types), [
+         'emptylabel'          => $emptylabel,
+         'value'               => $itemtype,
+         'rand'                => $rand,
+         'display_emptychoice' => true
+      ]);
 
-      } else {
-         echo "<div id='relation_all_devices$rand'>";
-         if ($_SESSION["glpiactiveprofile"]["helpdesk_hardware"]&pow(2,
-                                                                     Ticket::HELPDESK_ALL_HARDWARE)) {
-            $types = PluginImpactsConfig::getAssetList();
-            $emptylabel = Dropdown::EMPTY_VALUE;
-            Dropdown::showItemTypes($myname, array_keys($types), [
-               'emptylabel'          => $emptylabel,
-               'value'               => $itemtype,
-               'rand'                => $rand,
-               'display_emptychoice' => true
-            ]);
-            //$found_type = isset($types[$itemtype]);
+      Ajax::updateItemOnSelectEvent(
+         "dropdown_$myname$rand",
+         "results_$myname$rand",
+         $CFG_GLPI["root_doc"]."/ajax/dropdownAllItems.php",
+         [
+            'idtable'         => '__VALUE__',
+            'name'            => $params['myname'],
+            'rand'            => $rand,
+            'used'            => $params['used'],
+            'admin'           => $admin,
+            'multiple'        => $params['multiple'],
+            'entity_restrict' => $entity_restrict,
+         ]
+      );
+      echo "<span id='results_$myname$rand'>\n";
 
-            Ajax::updateItemOnSelectEvent(
-               "dropdown_$myname$rand",
-               "results_$myname$rand",
-               $CFG_GLPI["root_doc"]."/ajax/dropdownAllItems.php",
-               [
-                  'idtable'         => '__VALUE__',
-                  'name'            => $params['myname'],
-                  'rand'            => $rand,
-                  'used'            => $params['used'],
-                  'admin'           => $admin,
-                  'multiple'        => $params['multiple'],
-                  'entity_restrict' => $entity_restrict,
-               ]
-            );
-            echo "<span id='results_$myname$rand'>\n";
+      echo "</span>\n";
+      echo "</div>";
 
-            echo "</span>\n";
-         }
-         echo "</div>";
-      }
       return $rand;
    }
 

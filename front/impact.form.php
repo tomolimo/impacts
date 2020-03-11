@@ -33,8 +33,8 @@ Session::checkLoginUser();
 if (isset($_POST['add'])
     && isset($_POST['itemtype_1']) && isset($_POST['items_id_1']) && $_POST['items_id_1'] > 0
     && isset($_POST['itemtype_2']) && isset($_POST['items_id_2']) && $_POST['items_id_2'] > 0
-    && class_exists($_POST['itemtype_1'])) {
-   
+    && class_exists($_POST['itemtype_1']) && class_exists($_POST['itemtype_2'])) {
+
    $item = new $_POST['itemtype_1'];
    $item->check(-1, UPDATE, $_POST);
 
@@ -47,4 +47,9 @@ if (isset($_POST['add'])
    Html::back();
 }
 
-Html::displayErrorAndDie("lost");
+Session::addMessageAfterRedirect(
+         __("Asset is missing!", "impacts"),
+         true,
+         ERROR
+         );
+Html::back();

@@ -165,7 +165,7 @@ class PluginImpactsImpact extends CommonDBRelation {
 
 
    static function showImpactNetwork(CommonGLPI $item, $level = 1) {
-      global $CFG_GLPI;
+      global $CFG_GLPI, $GLPI_CACHE;
 
       echo '<script type="text/javascript" src="'.$CFG_GLPI['root_doc'].'/plugins/impacts/lib/vis-4.21.0/dist/vis.js"></script>
             <link href="'.$CFG_GLPI['root_doc'].'/plugins/impacts/lib/vis-4.21.0/dist/vis-network.min.css" rel="stylesheet" type="text/css" />
@@ -218,18 +218,40 @@ class PluginImpactsImpact extends CommonDBRelation {
       }
 
       $nodestring = "";
-      $imgpath = $CFG_GLPI['root_doc']."/plugins/impacts/pics/";
+      $imgpath = $CFG_GLPI['root_doc']."/plugins/impacts/pics";
       foreach ($nodes as $id => $data) {
          $temp = new $data['itemtype'];
          $temp->getFromDB($data['items_id']);
-         $link = $temp->getLinkURL();
+         $link = "";
+         if ($temp->can($temp->fields['id'], READ)) {
+            $link = $temp->getLinkURL();
+         }
          $addOptions = "";
          if ($data['itemtype'] == $item::getType()
              && $data['items_id'] == $item->fields['id']) {
             // will fixes this node
             $addOptions = ", shapeProperties: { useBorderWithImage: true } ";
          }
-         $nodestring .= "{ id: '$id', label: '".$temp->fields['name']."', image: '$imgpath/".$data['itemtype'].".png', shape: 'image', urllink: '$link' $addOptions},";
+         if (!isset($temp->fields['name'])) {
+            $temp->fields['name'] = $temp->getNameID();
+         }
+         //$GLPI_CACHE->delete("impact_pics".$data['itemtype']);
+         $path = $imgpath."/undefined.png";
+         if (Toolbox::useCache()) {
+            if ($GLPI_CACHE->has("impact_pics".$data['itemtype'])) {
+               $path = $GLPI_CACHE->get("impact_pics".$data['itemtype']);
+            }
+            if (file_exists(GLPI_ROOT."/".$imgpath."/".$data['itemtype'].".png") && !$GLPI_CACHE->has("impact_pics".$data['itemtype'])) {
+               $GLPI_CACHE->set("impact_pics".$data['itemtype'], $imgpath."/".$data['itemtype'].".png");
+               $path = $GLPI_CACHE->get("impact_pics".$data['itemtype']);
+            }
+         } else {
+            if (file_exists(GLPI_ROOT."/".$imgpath."/".$data['itemtype'].".png")) {
+               $path =  $imgpath."/".$data['itemtype'].".png";
+            }
+         }
+
+         $nodestring .= "{ id: '$id', title: '".$temp->fields['name']."', label: '".substr($temp->fields['name'], 0, 10)."', image: '$path', shape: 'image', urllink: '$link' $addOptions},";
       }
 
       $currentID = $item::getType().'['.$item->fields['id'].']';
@@ -252,7 +274,7 @@ class PluginImpactsImpact extends CommonDBRelation {
          network.on("doubleClick", function (properties) {
             if (properties.nodes.length > 0) {
                var currentID = "{$currentID}";
-               if (currentID != properties.nodes[0]) {
+               if (currentID != properties.nodes[0] && nodes.get(properties.nodes[0]).urllink != "") {
                   document.location.href = nodes.get(properties.nodes[0]).urllink ;
                }
             }
@@ -296,7 +318,7 @@ JAVASCRIPT;
       }
 
       $itemtype  = $item::getType();
-      $canupdate = $item->canUpdateItem() && $itemtype::canView();
+      $canupdate = $item->canUpdateItem() && $itemtype::canView() && $itemtype::canUpdate();
 
       $columns = [
          'itemtype'      => __('Item type'),
@@ -327,8 +349,14 @@ JAVASCRIPT;
       $query = [];
       $subQueries = [];
       foreach ($itemtypes as $itemtype) {
+         $temp = new $itemtype;
+         $temp->getEmpty();
+         $field = "it.name";
+         if (!isset($temp->fields['name'])) {
+            $field = "it.id";
+         }
          $subQueries[] = [
-               'SELECT'     => ["rel.id AS assocID", "rel.date_creation", "rel.$itemtype_active AS itemtype", "rel.$items_id_active AS items_id", "it.name"],
+               'SELECT'     => ["rel.id AS assocID", "rel.date_creation", "rel.$itemtype_active AS itemtype", "rel.$items_id_active AS items_id", $field],
                'FROM'       => self::getTable()." AS rel",
                'INNER JOIN' => [$itemtype::getTable()." AS it" => [
                   'FKEY' => [
@@ -343,20 +371,20 @@ JAVASCRIPT;
                ],
                'WHERE'      => [
                   'AND' => [
-                     "rel.$itemtype_passive" => $item::getType(), 
+                     "rel.$itemtype_passive" => $item::getType(),
                      "rel.$items_id_passive" => $item->fields['id']
                   ]
                ]
             ];
       }
-      if(count($subQueries) > 1) {
+      if (count($subQueries) > 1) {
          $query = new QueryUnion($subQueries, true);
-      } elseif(count($subQueries) == 1) {
+      } else if (count($subQueries) == 1) {
          $query = $subQueries[0];
       }
 
       $number = 0; // by default
-      if(!empty($query)) {
+      if (!empty($query)) {
          $result = $DB->request($query);
          $number = count($result);
       }
@@ -378,7 +406,7 @@ JAVASCRIPT;
 
          echo "<table class='tab_cadre_fixe'>";
 
-         echo "<tr class='tab_bg_1'><td>".sprintf(__('Add a new asset', 'impacts'), $item->fields['name'])."</td><td>";
+         echo "<tr class='tab_bg_1'><td>".__('Add a new asset', 'impacts')."</td><td>";
 
          $used = [];
          $used[$item::getType()][] = $item->fields['id']; // to prevent re-use of current item on itself

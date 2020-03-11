@@ -32,7 +32,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 // ----------------------------------------------------------------------
 
 
-define('IMPACTS_VERSION', '1.3.2');
+define('IMPACTS_VERSION', '1.3.5');
 
 // Minimal GLPI version, inclusive
 define("IMPACTS_MIN_GLPI", "9.3");
@@ -43,7 +43,7 @@ define("IMPACTS_MAX_GLPI", "9.5");
  * Summary of plugin_init_impacts
  */
 function plugin_init_impacts() {
-   global $PLUGIN_HOOKS;
+   global $PLUGIN_HOOKS, $DB;
 
    $plugin = new Plugin();
    if ($plugin->isInstalled('impacts')
@@ -58,6 +58,15 @@ function plugin_init_impacts() {
       $conf = PluginImpactsConfig::getInstance();
       foreach ($conf->fields['assets'] as $asset) {
          Plugin::registerClass('PluginImpactsImpact', ['addtabon' => $asset]);
+      }
+
+      $sub1 = new QuerySubQuery(['SELECT DISTINCT' => 'itemtype_1 AS itemtype', 'FROM' => 'glpi_plugin_impacts_impacts']);
+      $sub2 = new QuerySubQuery(['SELECT DISTINCT' => 'itemtype_2 AS itemtype', 'FROM' => 'glpi_plugin_impacts_impacts']);
+      $union = new QueryUnion([$sub1, $sub2]);
+      $itemtypes = $DB->request(['FROM' => $union]);
+
+      foreach ($itemtypes as $row) {
+         $PLUGIN_HOOKS['item_purge']['impacts'][$row['itemtype']] = 'plugin_item_purge_impacts';
       }
    }
 

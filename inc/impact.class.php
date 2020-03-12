@@ -210,7 +210,7 @@ class PluginImpactsImpact extends CommonDBRelation {
             'itemtype' => $data['itemtype_2'],
             'items_id' => $data['items_id_2']
          ];
-         $edgestring .= "{ from: '".$idfrom."', to: '".$idto."', arrows: 'to' },";
+         $edgestring .= "{ from: '".$idfrom."', to: '".$idto."', arrows: 'to'},";
       }
 
       if (count($nodes) == 1) {
@@ -385,7 +385,14 @@ JAVASCRIPT;
 
       $number = 0; // by default
       if (!empty($query)) {
-         $result = $DB->request($query);
+         if (!$query instanceof QueryUnion) {
+            $result = $DB->request($query);
+         } else {
+            $result = $DB->request([
+                           'FROM' => $query,
+                           'ORDER' => ["$sort $order"]
+               ]);
+         }
          $number = count($result);
       }
 

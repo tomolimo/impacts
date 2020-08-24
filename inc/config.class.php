@@ -133,18 +133,20 @@ class PluginImpactsConfig extends CommonDBTM {
    static function getAssetList($completelist = false) {
       global $CFG_GLPI;
 
-      $regex = '/types$/m';
-      $listTemp = [];
-      foreach ($CFG_GLPI as $k => $type) {
-         if (is_array($type) && preg_match_all($regex, $k, $matches, PREG_SET_ORDER, 0)) {
-            foreach ($type as $val) {
-               if (strcmp($val, '*')) {
-                  array_push($listTemp, $val);
-               }
-            }
+      function printValue($value, $key, $userData) {
+         if (strcmp($value, '*')) {
+            $userData[] = $value;
          }
       }
-      $list = array_unique($listTemp);
+
+      $regex = '/types$/m';
+      $listTemp = new ArrayObject();
+      foreach ($CFG_GLPI as $k => $type) {
+         if (is_array($type) && preg_match_all($regex, $k, $matches, PREG_SET_ORDER, 0)) {
+            array_walk_recursive($type, 'printValue', $listTemp);
+         }
+      }
+      $list = array_unique($listTemp->getArrayCopy());
 
       if (!$completelist) {
          $config = self::getInstance();

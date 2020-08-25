@@ -133,9 +133,11 @@ class PluginImpactsConfig extends CommonDBTM {
    static function getAssetList($completelist = false) {
       global $CFG_GLPI;
 
-      function printValue($value, $key, $userData) {
-         if (strcmp($value, '*')) {
-            $userData[] = $value;
+      if (!function_exists('printValue')) {
+         function printValue($value, $key, $userData) {
+            if (strcmp($value, '*')) {
+               $userData[] = $value;
+            }
          }
       }
 

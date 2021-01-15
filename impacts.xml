@@ -38,6 +38,7 @@
          <num>1.3.7</num>
          <compatibility>9.3</compatibility>
          <compatibility>9.4</compatibility>
+         <compatibility>9.5</compatibility>
       </version>
    </versions>
    <langs>

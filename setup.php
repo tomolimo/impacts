@@ -37,7 +37,7 @@ define('IMPACTS_VERSION', '1.3.7');
 // Minimal GLPI version, inclusive
 define("IMPACTS_MIN_GLPI", "9.3");
 // Maximum GLPI version, exclusive
-define("IMPACTS_MAX_GLPI", "9.5");
+define("IMPACTS_MAX_GLPI", "9.6");
 
 /**
  * Summary of plugin_init_impacts

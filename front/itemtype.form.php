@@ -26,16 +26,9 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------------
  */
 
-// ----------------------------------------------------------------------
-// Original Author of file: Olivier Moron
-// ----------------------------------------------------------------------
 
-function impacts_install() {
-   global $DB;
+include ('../../../inc/includes.php');
 
-   // installation from scratch
-   include_once(GLPI_ROOT."/plugins/impacts/setup.php");
-   $info = plugin_version_impacts();
-   $DB->runFile(GLPI_ROOT . "/plugins/impacts/install/mysql/empty.sql");
+$dropdown = new PluginImpactsItemtype();
 
-}
+include (GLPI_ROOT . "/front/dropdown.common.form.php");

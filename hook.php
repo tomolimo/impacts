@@ -2,7 +2,7 @@
 /*
  * -------------------------------------------------------------------------
 Impacts plugin
-Copyright (C) 2018 by Raynet SAS a company of A.Raymond Network.
+Copyright (C) 2021 by Raynet SAS a company of A.Raymond Network.
 
 http://www.araymond.com
 -------------------------------------------------------------------------
@@ -25,6 +25,11 @@ You should have received a copy of the GNU General Public License
 along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------------
  */
+
+// ----------------------------------------------------------------------
+// Original Author of file: Olivier Moron
+// ----------------------------------------------------------------------
+
 
 /**
  * Summary of plugin_impacts_install
@@ -51,31 +56,10 @@ function plugin_impacts_install() {
 function plugin_impacts_uninstall() {
    return true;
 }
+/**
+ * Define Dropdown tables to be manage in GLPI :
+ **/
+function plugin_impacts_getDropdown() {
 
-function plugin_item_purge_impacts($item) {
-   global $DB;
-   $id   = $item->fields['id'];
-   $type = $item->getType();
-   $crit = [
-      'OR' => [
-         [
-            'AND' => [
-               'itemtype_1' => $type,
-               'items_id_1' => $id
-            ]
-         ],
-         [
-            'AND' => [
-               'itemtype_2' => $type,
-               'items_id_2' => $id
-            ]
-         ]
-      ]
-   ];
-   $DB->delete(
-      'glpi_plugin_impacts_impacts',
-      $crit
-      );
-   return true;
+   return ['PluginImpactsItemtype'  => PluginImpactsItemtype::getTypeName(2)];
 }
-

@@ -2,7 +2,7 @@
 /*
  * -------------------------------------------------------------------------
 Impacts plugin
-Copyright (C) 2018 by Raynet SAS a company of A.Raymond Network.
+Copyright (C) 2021 by Raynet SAS a company of A.Raymond Network.
 
 http://www.araymond.com
 -------------------------------------------------------------------------
@@ -26,6 +26,11 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------------
  */
 
+// ----------------------------------------------------------------------
+// Original Author of file: Olivier Moron
+// ----------------------------------------------------------------------
+
+
 if (!defined('GLPI_ROOT')) {
    die("Sorry. You can't access this file directly");
 }
@@ -33,29 +38,6 @@ if (!defined('GLPI_ROOT')) {
 class PluginImpactsConfig extends CommonDBTM {
 
    static private $_instance = null;
-   static $rightname = "config";
-
-   static function canCreate() {
-      return self::canUpdate();
-   }
-
-   /**
-    * Summary of getTypeName
-    * @param mixed $nb plural
-    * @return mixed
-    */
-   static function getTypeName($nb = 0) {
-      return __("Asset impact setup", "impacts");
-   }
-
-   /**
-    * Summary of getName
-    * @param mixed $with_comment with comment
-    * @return mixed
-    */
-   function getName($with_comment = 0) {
-      return self::getTypeName();
-   }
 
    /**
     * Summary of getInstance
@@ -67,101 +49,8 @@ class PluginImpactsConfig extends CommonDBTM {
          if (!self::$_instance->getFromDB(1)) {
             self::$_instance->getEmpty();
          }
-         // convert asset_list into PHP array
-         self::$_instance->fields['assets'] = importArrayFromDB(self::$_instance->fields['assets']);
       }
       return self::$_instance;
-   }
-
-
-   /**
-    * Summary of showConfigForm
-    * @param mixed $item is the config
-    * @return boolean
-    */
-   static function showConfigForm($item) {
-      $config = self::getInstance();
-      $config->showFormHeader();
-
-      echo "<tr class='tab_bg_2'>";
-      echo "<td>" . __('Asset list', 'impacts') . "</td>";
-      echo "<td>";
-      Dropdown::showFromArray('assets', self::getAssetList(true), [
-         'values'   => $config->fields['assets'],
-         'width'    => '100%',
-         'multiple' => true
-      ]);
-      echo "</td></tr>\n";
-
-      $config->showFormButtons(['candel'=>false]);
-
-      return false;
-   }
-
-      /**
-    * Prepare input datas for updating the item
-    *
-    * @see CommonDBTM::prepareInputForUpdate()
-    *
-    * @param $input array of datas used to update the item
-    *
-    * @return the modified $input array
-   **/
-   function prepareInputForUpdate($input) {
-      // asset_list update
-      $input['assets'] = exportArrayToDB((isset($input['assets'])
-                                             ? $input['assets'] : []));
-      return $input;
-   }
-
-   function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
-      if ($item::getType() == 'Config') {
-         return self::getTypeName();
-      }
-      return '';
-   }
-
-
-   static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
-      if ($item::getType() == 'Config') {
-         self::showConfigForm($item);
-      }
-      return true;
-   }
-
-
-   static function getAssetList($completelist = false) {
-      global $CFG_GLPI;
-
-      if (!function_exists('printValue')) {
-         function printValue($value, $key, $userData) {
-            if (strcmp($value, '*')) {
-               $userData[] = $value;
-            }
-         }
-      }
-
-      $regex = '/types$/m';
-      $listTemp = new ArrayObject();
-      foreach ($CFG_GLPI as $k => $type) {
-         if (is_array($type) && preg_match_all($regex, $k, $matches, PREG_SET_ORDER, 0)) {
-            array_walk_recursive($type, 'printValue', $listTemp);
-         }
-      }
-      $list = array_unique($listTemp->getArrayCopy());
-
-      if (!$completelist) {
-         $config = self::getInstance();
-         $list = $config->fields['assets'];
-      }
-      $ret = [];
-      foreach ($list as $lo) {
-         if (class_exists($lo)) {
-            $ret[$lo] = $lo::getTypeName(Session::getPluralNumber())." ($lo)";
-         }
-      }
-      asort($ret, SORT_STRING);
-      return $ret;
    }
 
 }

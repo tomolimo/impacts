@@ -6,14 +6,14 @@
    <logo>https://raw.githubusercontent.com/tomolimo/impacts/master/impacts.png</logo>
    <description>
       <short>
-		   <fr>Ce plugin permet de gerer les impacts entre éléments de l'inventaire.</fr>
-         <en>This plugin enables management of impacts between assets.</en>
+		   <fr>Migre les données des versions précédentes du plugin dans les tables du coeur de GLPI 9.5 et permet d'ajouter des types pour les analyses d'impacts. </fr>
+         <en>Migrates former version plugin data into GLPÏ 9.5 core tables and add possibility to add new types to impact analysis.</en>
       </short>
       <long>
-         <en>This plugin adds the impact management between assets (inventory elements). This can be extended to any GLPI object types (or plugin object types).
+         <en>This release migrates the data from the former version of this plugin into the GLPI 9.5 core tables. And provides possiblity to add any GLPI object types (or any plugin object types) into the list of enabled types for impact analysis. It gives also the possibility to change the icons for GLPI core item types (or for plugin item types).
 
 *Icon credit: Network by priyanka from the Noun Project*</en>
-		   <fr>Ce plugin ajoute la gestion des impacts entre éléments de l'inventaire. Cette fonctionnalité peut être étendue à n'importe quel type d'objet de GLPI (ou de type d'objet d'un plugin).
+		   <fr>Cette version du plugin migre les données des versions précédentes dans les table du coeur de GLPI 9.5. Et fournit la possibilité d'ajouter n'importe quel type d'objet GLPI (ou type d'objet d'un plugin) dans la liste des types activés pour l'analyse d'impact. Il donne aussi la possibilité de changeer les icônes des types du coeur de GLPI (ou bien des types des plugins).
 
 *Icon credit: Network by priyanka from the Noun Project*</fr>
       </long>
@@ -38,6 +38,10 @@
          <num>1.3.7</num>
          <compatibility>9.3</compatibility>
          <compatibility>9.4</compatibility>
+      </version>
+      <version>
+         <num>2.0.3</num>
+         <compatibility>9.5</compatibility>
       </version>
    </versions>
    <langs>

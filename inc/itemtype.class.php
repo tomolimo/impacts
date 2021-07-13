@@ -149,7 +149,7 @@ class PluginImpactsItemtype extends CommonDropdown
          $input = false;
       }
       $elt = new self;
-      if ($input && $elt->getFromDBByCrit(['name' => $input['name']])) {
+      if ($input && $elt->getFromDBByCrit(['name' => $input['name']]) && $input['url_path_pics'] == $elt->fields['url_path_pics']) {
          Session::addMessageAfterRedirect(
                sprintf(__('Item type class: \''.$input['name'].'\' is already existing!')),
                true,

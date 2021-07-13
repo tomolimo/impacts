@@ -32,7 +32,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 // ----------------------------------------------------------------------
 
 
-define('IMPACTS_VERSION', '2.0.3');
+define('IMPACTS_VERSION', '2.0.4');
 
 // Minimal GLPI version, inclusive
 define("IMPACTS_MIN_GLPI", "9.5");

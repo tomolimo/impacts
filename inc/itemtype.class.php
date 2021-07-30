@@ -70,7 +70,7 @@ class PluginImpactsItemtype extends CommonDropdown
       echo "<tr class='tab_bg_1'>";
       echo "<td><label for='name'>".__('Item type class name (example: PluginAccountsAccount,...)', 'impacts')."</label></td>";
       echo "<td><input type='text' id='name' name='name' value='".$this->fields['name']."'/></td>";
-      if (isset($this->fields['name']) 
+      if (isset($this->fields['name'])
          && class_exists($this->fields['name'])) {
          echo '<td>Item type label is "'.$this->fields['name']::getTypeName(1).'"</td>';
       }
@@ -79,7 +79,7 @@ class PluginImpactsItemtype extends CommonDropdown
       echo "<td><label for='urlpath'>".__('Icon path (example: \'plugins/impacts/pics/PluginAccountsAccount.png\')', 'impacts')."</label></td>";
       echo "<td><input size=50 type='text' id='urlpath' name='url_path_pics' value='".$this->fields['url_path_pics']."'/></td>";
       $file_path = GLPI_ROOT . "/" . $this->fields['url_path_pics'];
-      if (file_exists($file_path) 
+      if (file_exists($file_path)
          && is_file($file_path)) {
          echo "<td><img src='".$CFG_GLPI['root_doc'] . "/" . $this->fields['url_path_pics']."' style='width: 32px; height: 32px;'/></td>";
       } else {
@@ -158,5 +158,37 @@ class PluginImpactsItemtype extends CommonDropdown
          $input = false;
       }
       return $input;
+   }
+
+
+   function rawSearchOptions() {
+       global $DB;
+       $tab = [];
+
+       $tab[] = [
+          'id'   => 'common',
+          'name' => __('Characteristics')
+       ];
+
+       $tab[] = [
+          'id'                => '1',
+          'table'             => $this->getTable(),
+          'field'             => 'name',
+          'name'              => __('Name'),
+          'datatype'          => 'itemlink',
+          'massiveaction'     => false,
+          'autocomplete'      => true,
+       ];
+
+       $tab[] = [
+          'id'                => '2',
+          'table'             => $this->getTable(),
+          'field'             => 'id',
+          'name'              => __('ID'),
+          'massiveaction'     => false,
+          'datatype'          => 'number'
+       ];
+
+       return $tab;
    }
 }

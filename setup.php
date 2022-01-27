@@ -32,7 +32,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 // ----------------------------------------------------------------------
 
 
-define('IMPACTS_VERSION', '2.0.5');
+define('IMPACTS_VERSION', '2.0.7');
 
 // Minimal GLPI version, inclusive
 define("IMPACTS_MIN_GLPI", "9.5");
@@ -53,10 +53,25 @@ function plugin_init_impacts() {
       $PLUGIN_HOOKS['post_show_tab']['impacts'] = ['PluginImpactsItemtype', 'post_show_tab_impacts'];
 
       foreach($DB->request(['FROM' => 'glpi_plugin_impacts_itemtypes']) as $row) {
+         if ($plug = isPluginItemType($row['name'])) {
+            $plugname = strtolower($plug['plugin']);
+
+            // check plugin exists and is enabled
+            if (!Plugin::isPluginLoaded($plugname)) {
+               // load plugin class if plugin is not loaded
+               Plugin::load($plugname);
+            }
+         }
+
          if (class_exists($row['name'])) {
             $CFG_GLPI["impact_asset_types"][$row['name']] = $row['url_path_pics'];
          }
       }
+
+      foreach(Impact::getEnabledItemtypes() as $type) {
+         CommonGLPI::registerStandardTab($type, 'Impact');
+      }
+
    }
 
    $PLUGIN_HOOKS['csrf_compliant']['impacts'] = true;
